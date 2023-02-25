@@ -4,99 +4,133 @@ import random
 POPULATION_SIZE = 100
 GENERATIONS = 200
 MUTATION_RATE = 0.005
-RECOMBINATION_RATE = 0.5
+COPY_RATE = 0.25
 
-# Define the knapsack problem parameters
-values = [10, 5, 15, 7, 6, 18, 3]
-weights = [2, 3, 5, 4, 2, 6, 1]
-capacity = 12
+# function to get the information from the .kp file
+def read_file(filename):
+   data = []
+   with open(filename) as f:
+      for line in f:
+         data.append(list(map(str, line.strip().split(',')))) # implementation to accept strings for the label
+   return data
 
-# Define the fitness function
-def fitness(individual):
-    total_value = sum([values[i] for i in range(len(individual)) if individual[i] == 1])
-    total_weight = sum([weights[i] for i in range(len(individual)) if individual[i] == 1])
-    if total_weight > capacity:
-        return 0
-    return total_value / total_weight
-
-# Define the remainder stochastic sampling function
-def remainder_stochastic_sampling(fitness_values, k):
-    intermediate_population = []
-    sum_fitness = sum(fitness_values)
-    p = [fitness_values[i] / sum_fitness for i in range(len(fitness_values))]
-    counts = [int(POPULATION_SIZE * p[i]) for i in range(len(p))]
-    remainder = POPULATION_SIZE - sum(counts)
-    for i in range(remainder):
-        counts[i] += 1
-    for i in range(len(counts)):
-        intermediate_population.extend([i] * counts[i])
-    return [random.choice(intermediate_population) for i in range(k)]
-
-# Define the recombination function
-def recombine(parent1, parent2):
-    if random.random() < RECOMBINATION_RATE:
-        crossover_point = random.randint(0, len(parent1)-1)
-        child1 = parent1[:crossover_point] + parent2[crossover_point:]
-        child2 = parent2[:crossover_point] + parent1[crossover_point:]
-    else:
-        child1 = parent1
-        child2 = parent2
-    return child1, child2
-
-# Define the mutation function
-def mutate(individual):
-    mutated = False
+# function to calculate the fitness of an individual
+def calculate_fitness(individual, weights, values, max_weight):
+    total_weight = 0
+    total_value = 0
     for i in range(len(individual)):
-        if random.random() < MUTATION_RATE:
-            individual[i] = 1 - individual[i]
-            mutated = True
-    if not mutated:
-        index = random.randint(0, len(individual)-1)
-        individual[index] = 1 - individual[index]
-    return individual
+        if individual[i] == '1':
+            total_weight += weights[i]
+            total_value += values[i]
+            if total_weight > max_weight:
+                return 0
+    if total_weight == 0:
+        return 0
+    return total_value
 
-# Initialize the population randomly
-population = [[random.randint(0, 1) for i in range(len(values))] for j in range(POPULATION_SIZE)]
+# function to initialize a population randomly
+def initialize_population(population_size):
+    population = []
+    for i in range(population_size):
+        individual = ''.join(str(random.randint(0, 1)) for _ in range(len(data)))
+        population.append(individual)
+    return population
+
+# function to generate an intermediate population
+def generate_intermediate_population(population):
+    fitnesses = [calculate_fitness(individual, weights, values, max_weight) for individual in population]
+    total_fitness = sum(fitnesses)
+    # calculate average fitness of the population
+    avg = total_fitness/len(population) if total_fitness != 0 else 0
+    # calculate the number of individuals to select from each parent
+    n = [fitness/avg if avg != 0 else 0 if fitness != max(fitnesses) else 1 for fitness in fitnesses]
+    # use remainder stochastic sampling to select individuals from parents
+    intermediate_population = []
+    for i in range(len(population)):
+        # select the whole number part of n[i] individuals from parent i
+        num_individuals = int(n[i])
+        for j in range(num_individuals):
+            intermediate_population.append(population[i])
+        # randomly select one additional individual based on the fractional part of n[i]
+        if random.random() < n[i] - num_individuals:
+            intermediate_population.append(population[i])
+    # if the intermediate population size is still smaller than the population size, randomly add individuals until it reaches the desired size
+    while len(intermediate_population) < POPULATION_SIZE:
+        intermediate_population.append(random.choice(population))
+    return intermediate_population
+
+
+# function to recombine the intermediate population
+def recombine(intermediate_population):
+    new_population = []
+    # choose 50 pairs of parents at random
+    for i in range(50):
+        parent1, parent2 = random.sample(intermediate_population, 2)
+        # 25% chance of copying parents directly
+        if random.random() < COPY_RATE:
+            child1 = parent1
+            child2 = parent2
+        else:
+            # choose a random crossover point
+            crossover_point = random.randint(1, len(parent1) - 1)
+            # combine parents at crossover point
+            child1 = parent1[:crossover_point] + parent2[crossover_point:]
+            child2 = parent2[:crossover_point] + parent1[crossover_point:]
+        # add children to new population
+        new_population.append(child1)
+        new_population.append(child2)
+    return new_population
+
+# function for mutation
+def mutate(child):
+    mutated_child = ""
+    for gene in child:
+        if random.random() < MUTATION_RATE:
+            if gene == "0":
+                mutated_child += "1"
+            else:
+                mutated_child += "0"
+        else:
+            mutated_child += gene
+    return mutated_child
+
+filename = "Datasets/test1.kp"
+data = read_file(filename)
+
+max_weight = int(data[0][1]) # gets max weight from the file
+del data[0] # gets rid of first index in array containing number of lines and max weight
+
+# gets all of the weights and puts them into an array and does the same with complementing values
+weights = [sublist[1] for sublist in data]
+values = [sublist[2] for sublist in data]
+# converts the arrays into int arrays
+weights = [int(i) for i in weights]
+values = [int(i) for i in values]
+
+# initialize starting population
+population = initialize_population(POPULATION_SIZE)
 
 # Run the genetic algorithm
+best_fitness = 0
+best_individual = None
 for generation in range(GENERATIONS):
-    # Calculate the fitness of each individual
-    fitness_values = [fitness(individual) for individual in population]
-
-    # Select parents using remainder stochastic sampling
-    intermediate_population = remainder_stochastic_sampling(fitness_values, int(RECOMBINATION_RATE * POPULATION_SIZE))
-
-    # Recombine parents
-    new_population = []
-    for i in range(int(RECOMBINATION_RATE * POPULATION_SIZE // 2)):
-        parent1 = population[intermediate_population[random.randint(0, len(intermediate_population)-1)]]
-        parent2 = population[intermediate_population[random.randint(0, len(intermediate_population)-1)]]
-        child1, child2 = recombine(parent1, parent2)
-        new_population.append(mutate(child1))
-        new_population.append(mutate(child2))
-
-    # Copy parents with 25% probability
-    for i in range(int(POPULATION_SIZE * 0.25)):
-        new_population.append(population[random.randint(0, POPULATION_SIZE-1)])
-
-    # Replace the old population with the new population
+    intermediate_population = generate_intermediate_population(population)
+    new_population = recombine(intermediate_population)
+    for i in range(len(new_population)):
+        new_population[i] = mutate(new_population[i])
     population = new_population
+    # update the best individual found so far
+    for individual in population:
+        fitness = calculate_fitness(individual, weights, values, max_weight)
+        if fitness > best_fitness:
+            best_fitness = fitness
+            best_individual = individual
+            max_value = sum([v * int(individual[i]) for i, v in enumerate(values)])
+            max_weight = sum([w * int(individual[i]) for i, w in enumerate(weights)])
 
-# Find the individual with the highest fitness value
-best_individual = population[0]
-best_fitness = fitness(best_individual)
-for individual in population:
-    if fitness(individual) > best_fitness:
-        best_individual = individual
-        best_fitness = fitness(individual)
+# Print results
+print("Number of Generations:", GENERATIONS)
+print("Max Value:", max_value)
+print("Max Weight:", max_weight)
+print("Best Individual:", best_individual)
 
-# Print the best solution
-print("Best solution found:")
-print("Knapsack contents: ", end="")
-for i in range(len(best_individual)):
-    if best_individual[i] == 1:
-        print(f"{i+1} ", end="")
-
-print(f"\nTotal value: {sum([values[i] for i in range(len(best_individual)) if best_individual[i] == 1])}")
-print(f"Total weight: {sum([weights[i] for i in range(len(best_individual)) if best_individual[i] == 1])}")
-print(f"Fitness value: {best_fitness}")
