@@ -1,6 +1,7 @@
 import random
+import math
 
-# Define the parameters
+# params for the genetic algorithm
 POPULATION_SIZE = 100
 GENERATIONS = 200
 MUTATION_RATE = 0.005
@@ -14,34 +15,46 @@ def read_file(filename):
          data.append(list(map(str, line.strip().split(',')))) # implementation to accept strings for the label
    return data
 
+# function to initialize a population randomly
+def initialize_population():
+    # create empty array
+    population = []
+    for i in range(POPULATION_SIZE):
+        # randomly choose if each gene will be 0 or 1
+        # 0 = don't include item in knapsack, 1 = include item in knapsack
+        individual = ''.join(str(random.randint(0, 1)) for _ in range(len(data)))
+        # add the individual to the population
+        population.append(individual)
+    return population
+
 # function to calculate the fitness of an individual
 def calculate_fitness(individual, weights, values, max_weight):
+    # create variables to store total value and weight
     total_weight = 0
     total_value = 0
+    # check each gene in an individual's genotype
     for i in range(len(individual)):
+        # if an item is included in the knapsack, then add
+        # that item's value and weight to the total
         if individual[i] == '1':
             total_weight += weights[i]
             total_value += values[i]
+            # if the total weight is greater than the max weight, then
+            # it is invalid, thus the fitness is very low
             if total_weight > max_weight:
-                return 0
+                return -math.inf
+    # if the total weight is 0, then no items are included
     if total_weight == 0:
-        return 0
-    return total_value
+        return -math.inf
+    return total_value/total_weight
 
-# function to initialize a population randomly
-def initialize_population(population_size):
-    population = []
-    for i in range(population_size):
-        individual = ''.join(str(random.randint(0, 1)) for _ in range(len(data)))
-        population.append(individual)
-    return population
 
 # function to generate an intermediate population
 def generate_intermediate_population(population):
     fitnesses = [calculate_fitness(individual, weights, values, max_weight) for individual in population]
     total_fitness = sum(fitnesses)
     # calculate average fitness of the population
-    avg = total_fitness/len(population) if total_fitness != 0 else 0
+    avg = total_fitness/len(population) if total_fitness != -math.inf else 0
     # calculate the number of individuals to select from each parent
     n = [fitness/avg if avg != 0 else 0 if fitness != max(fitnesses) else 1 for fitness in fitnesses]
     # use remainder stochastic sampling to select individuals from parents
@@ -58,7 +71,6 @@ def generate_intermediate_population(population):
     while len(intermediate_population) < POPULATION_SIZE:
         intermediate_population.append(random.choice(population))
     return intermediate_population
-
 
 # function to recombine the intermediate population
 def recombine(intermediate_population):
@@ -81,20 +93,24 @@ def recombine(intermediate_population):
         new_population.append(child2)
     return new_population
 
-# function for mutation
-def mutate(child):
-    mutated_child = ""
-    for gene in child:
+# function for mutation of an individual
+def mutate(individual):
+    # create new individual to return
+    mutated_individual = ""
+    # go through each gene in an individual's genotype
+    for gene in individual:
+        # 0.5% chance of mutation
         if random.random() < MUTATION_RATE:
             if gene == "0":
-                mutated_child += "1"
+                mutated_individual += "1"
             else:
-                mutated_child += "0"
+                mutated_individual += "0"
         else:
-            mutated_child += gene
-    return mutated_child
+            mutated_individual += gene
+    return mutated_individual
 
-filename = "Datasets/test1.kp"
+# get information from the dataset
+filename = "Datasets/my-tests/test1.kp"
 data = read_file(filename)
 
 max_weight = int(data[0][1]) # gets max weight from the file
@@ -107,12 +123,12 @@ values = [sublist[2] for sublist in data]
 weights = [int(i) for i in weights]
 values = [int(i) for i in values]
 
-# initialize starting population
-population = initialize_population(POPULATION_SIZE)
-
 # Run the genetic algorithm
+# initialize starting population randomly
+population = initialize_population()
 best_fitness = 0
 best_individual = None
+# run the algorithm for 200 generations
 for generation in range(GENERATIONS):
     intermediate_population = generate_intermediate_population(population)
     new_population = recombine(intermediate_population)
@@ -126,11 +142,10 @@ for generation in range(GENERATIONS):
             best_fitness = fitness
             best_individual = individual
             max_value = sum([v * int(individual[i]) for i, v in enumerate(values)])
-            max_weight = sum([w * int(individual[i]) for i, w in enumerate(weights)])
+            weight = sum([w * int(individual[i]) for i, w in enumerate(weights)])
 
 # Print results
 print("Number of Generations:", GENERATIONS)
 print("Max Value:", max_value)
-print("Max Weight:", max_weight)
+print("Max Weight:", weight)
 print("Best Individual:", best_individual)
-
