@@ -1,5 +1,8 @@
 import random
 import math
+import time
+
+start_time = time.time()
 
 # params for the genetic algorithm
 POPULATION_SIZE = 100
@@ -146,6 +149,10 @@ for generation in range(GENERATIONS):
 
 # Print results
 print("Number of Generations:", GENERATIONS)
+print("Best Individual:", best_individual)
 print("Max Value:", max_value)
 print("Max Weight:", weight)
-print("Best Individual:", best_individual)
+
+end_time = time.time()
+time_elapsed = end_time - start_time
+print("\nTime elapsed: {:.1f} seconds".format(time_elapsed))
