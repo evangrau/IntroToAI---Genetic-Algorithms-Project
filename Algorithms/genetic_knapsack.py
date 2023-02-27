@@ -78,6 +78,8 @@ def generate_intermediate_population(population):
 # function to recombine the intermediate population
 def recombine(intermediate_population):
     new_population = []
+    # choose a random crossover point
+    crossover_point = random.randint(1, len(data) - 1)
     # choose 50 pairs of parents at random
     for i in range(50):
         parent1, parent2 = random.sample(intermediate_population, 2)
@@ -86,8 +88,6 @@ def recombine(intermediate_population):
             child1 = parent1
             child2 = parent2
         else:
-            # choose a random crossover point
-            crossover_point = random.randint(1, len(parent1) - 1)
             # combine parents at crossover point
             child1 = parent1[:crossover_point] + parent2[crossover_point:]
             child2 = parent2[:crossover_point] + parent1[crossover_point:]
