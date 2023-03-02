@@ -57,13 +57,16 @@ def exponential_moving_average(data, genotype):
     
     return ema
 
-filename = "Datasets/historical-stock-prices/AAPL-1.txt"
-data = read_file(filename)
+dir = "Datasets/historical-stock-prices/"
+data_strings = [dir+"AAPL-1.txt",dir+"AAPL-2.txt",dir+"AAPL-3.txt",dir+"AAPL-4.txt",dir+"AAPL-5.txt",dir+"DDS-1.txt",dir+"DDS-2.txt",dir+"DDS-3.txt",dir+"DDS-4.txt",dir+"DDS-5.txt",dir+"F-1.txt",dir+"F-2.txt",dir+"F-3.txt",dir+"F-4.txt",dir+"F-5.txt",dir+"GE-1.txt",dir+"GE-2.txt",dir+"GE-3.txt",dir+"GE-4.txt",dir+"GE-5.txt",dir+"RTX-1.txt",dir+"RTX-2.txt",dir+"RTX-3.txt",dir+"RTX-4.txt",dir+"RTX-5.txt"]
+datasets = []
+for d in data_strings:
+    datasets.append(read_file(d))
 
 genotype = "s050&e030&m010"
 
-print("Simple moving average     : " + str(simple_moving_average(data, genotype)))
-print("Exponential moving average: " + str(exponential_moving_average(data, genotype)))
+print("Simple moving average     : " + str(simple_moving_average(datasets[0], genotype)))
+print("Exponential moving average: " + str(exponential_moving_average(datasets[0], genotype)))
 
 end_time = time.time()
 time_elapsed = end_time - start_time
