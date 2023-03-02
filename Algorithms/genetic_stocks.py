@@ -20,25 +20,34 @@ def read_file(filename):
     return data
 
 
-def simple_moving_average(data, window_size):
+def simple_moving_average(data, window_size, actual_price):
     # Calculates the simple moving average of the data using the specified window size
     if len(data) < window_size:
-        raise ValueError("Window size cannot be larger than data size")
-    
+        return False # sell
+
     sma = []
     for i in range(window_size, len(data)+1):
         window = data[i-window_size:i]
         sma.append(sum(window) / window_size)
     
-    return sum(sma)
+    sma_average = sum(sma) / len(sma)
+    return actual_price > sma_average
+    
 
-def exponential_moving_average(data, alpha):
+def exponential_moving_average(data, alpha, window_size):
     # Calculates the exponential moving average of the data using the specified alpha value
     ema = [data[0]]
     for i in range(1, len(data)):
         ema.append(alpha * data[i] + (1 - alpha) * ema[-1])
     
-    return sum(ema)
+    if len(data) < window_size:
+        return False
+    
+    for i in range(window_size, len(data)):
+        if data[i] > ema[i-window_size]:
+            return True
+    
+    return False
 
 def max_rule(data, n):
     if len(data) < n:
@@ -70,8 +79,8 @@ def fitness(genotype):
     i = 0
     for gene in genotype:
         if gene == 'e':
-            num = genotype[i + 1] + genotype[i + 2] + genotype[i + 3]
-            alpha = 2 / int(num) + 1
+            e_num = genotype[i + 1] + genotype[i + 2] + genotype[i + 3]
+            alpha = 2 / int(e_num) + 1
         i += 1
     n = 0
     i = 0
@@ -80,13 +89,16 @@ def fitness(genotype):
             num = genotype[i + 1] + genotype[i + 2] + genotype[i + 3]
             n = int(num)
         i += 1
+
+    capital = 20000
+    gain = 0
     for dataset in datasets:
-        sma = simple_moving_average(dataset, window_size)
-        ema = exponential_moving_average(dataset, alpha)
-        max = max_rule(dataset, n)
+        sma = simple_moving_average(dataset, window_size, window_size)
+        ema = exponential_moving_average(dataset, alpha, int(e_num))
+        # max = max_rule(dataset, n)
         print("Simple moving average     : " + str(sma))
         print("Exponential moving average: " + str(ema))
-        print("Max rule                  : " + max[n])
+        # print("Max rule                  : " + max[n])
 
 # function to recombine the intermediate population
 def recombine(intermediate_population):
