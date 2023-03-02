@@ -1,5 +1,4 @@
 import random
-import math
 import time
 
 start_time = time.time()
@@ -25,7 +24,7 @@ def initialize_population():
     for i in range(POPULATION_SIZE):
         # randomly choose if each gene will be 0 or 1
         # 0 = don't include item in knapsack, 1 = include item in knapsack
-        individual = ''.join(str(random.randint(0, 1)) for _ in range(len(data)))
+        individual = ''.join(str(random.randint(0, 0)) for _ in range(len(data)))
         # add the individual to the population
         population.append(individual)
     return population
@@ -43,13 +42,18 @@ def calculate_fitness(individual, weights, values, max_weight):
             total_weight += weights[i]
             total_value += values[i]
             # if the total weight is greater than the max weight, then
-            # it is invalid, thus the fitness is very low
+            # it is invalid
             if total_weight > max_weight:
-                return -math.inf
+                return -1
     # if the total weight is 0, then no items are included
     if total_weight == 0:
-        return -math.inf
-    return total_value/total_weight
+        return -1
+    # calculate the value to weight ratio
+    ratio = total_value / total_weight
+    # allow a lower ratio if it means more items in the knapsack
+    if ratio < 1:
+        ratio *= 0.8  # reduce the ratio by 20%
+    return ratio
 
 
 # function to generate an intermediate population
@@ -57,7 +61,7 @@ def generate_intermediate_population(population):
     fitnesses = [calculate_fitness(individual, weights, values, max_weight) for individual in population]
     total_fitness = sum(fitnesses)
     # calculate average fitness of the population
-    avg = total_fitness/len(population) if total_fitness != -math.inf else 0
+    avg = total_fitness/len(population) if total_fitness != 0 else 0
     # calculate the number of individuals to select from each parent
     n = [fitness/avg if avg != 0 else 0 if fitness != max(fitnesses) else 1 for fitness in fitnesses]
     # use remainder stochastic sampling to select individuals from parents
@@ -113,7 +117,7 @@ def mutate(individual):
     return mutated_individual
 
 # get information from the dataset
-filename = "Datasets/my-tests/test1.kp"
+filename = "Datasets/knapsack/test100.kp"
 data = read_file(filename)
 
 max_weight = int(data[0][1]) # gets max weight from the file
@@ -131,6 +135,8 @@ values = [int(i) for i in values]
 population = initialize_population()
 best_fitness = 0
 best_individual = None
+max_value = 0
+weight = 0
 # run the algorithm for 200 generations
 for generation in range(GENERATIONS):
     intermediate_population = generate_intermediate_population(population)
