@@ -19,6 +19,7 @@ def read_file(filename):
         data[i] = float(val)
     return data
 
+
 def simple_moving_average(data, genotype):
     window_size = 0
     i = 0
@@ -32,10 +33,10 @@ def simple_moving_average(data, genotype):
     if len(data) < window_size:
         raise ValueError("Window size cannot be larger than data size")
     
-    sma = 0
+    sma = []
     for i in range(window_size, len(data)+1):
         window = data[i-window_size:i]
-        sma += (sum(window) / window_size)
+        sma.append(sum(window) / window_size)
     
     return sma
 
@@ -45,13 +46,13 @@ def exponential_moving_average(data, genotype):
     for gene in genotype:
         if gene == 'e':
             num = genotype[i + 1] + genotype[i + 2] + genotype[i + 3]
-            alpha = 2 / int(num) + 1
+            alpha = float(num) / 1000
         i += 1
 
     # Calculates the exponential moving average of the data using the specified alpha value
-    ema = 0
+    ema = [data[0]]
     for i in range(1, len(data)):
-        ema += ()
+        ema.append(alpha * data[i] + (1 - alpha) * ema[-1])
     
     return ema
 
@@ -65,8 +66,11 @@ genotype = "s050&e030&m010"
 
 start_time = time.time()
 
-print("Simple moving average     : " + str(simple_moving_average(datasets[0], genotype)))
-print("Exponential moving average: " + str(exponential_moving_average(datasets[0], genotype)))
+sma = sum(simple_moving_average(datasets[0], genotype))
+ema = sum(exponential_moving_average(datasets[0], genotype))
+
+print("Simple moving average     : " + str(sma))
+print("Exponential moving average: " + str(ema))
 
 end_time = time.time()
 time_elapsed = end_time - start_time
