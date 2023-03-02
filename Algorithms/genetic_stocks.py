@@ -88,6 +88,27 @@ def fitness(genotype):
         print("Exponential moving average: " + str(ema))
         print("Max rule                  : " + max[n])
 
+# function to recombine the intermediate population
+def recombine(intermediate_population):
+    new_population = []
+    # choose 50 pairs of parents at random
+    for i in range(50):
+        parent1, parent2 = random.sample(intermediate_population, 2)
+        # 20% chance of copying parents directly
+        if random.random() < COPY_RATE:
+            child1 = parent1
+            child2 = parent2
+        else:
+            # choose a random crossover point
+            crossover_point = random.randint(1, len(genotype) - 1)
+            # combine parents at crossover point
+            child1 = parent1[:crossover_point] + parent2[crossover_point:]
+            child2 = parent2[:crossover_point] + parent1[crossover_point:]
+        # add children to new population
+        new_population.append(child1)
+        new_population.append(child2)
+    return new_population
+
 # function for mutation of an individual
 def mutate(individual):
     # create new individual to return
