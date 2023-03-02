@@ -1,8 +1,6 @@
 import random
 import time
 
-start_time = time.time()
-
 # params for the genetic algorithm
 POPULATION_SIZE = 100
 GENERATIONS = 200
@@ -64,6 +62,8 @@ for d in data_strings:
     datasets.append(read_file(d))
 
 genotype = "s050&e030&m010"
+
+start_time = time.time()
 
 print("Simple moving average     : " + str(simple_moving_average(datasets[0], genotype)))
 print("Exponential moving average: " + str(exponential_moving_average(datasets[0], genotype)))
