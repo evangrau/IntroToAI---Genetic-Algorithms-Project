@@ -51,54 +51,115 @@ def exponential_moving_average(data, alpha, window_size):
 
 def max_rule(data, n):
     if len(data) < n:
-        raise ValueError("Window size cannot be larger than data size")
+        return False
     
-    max_prices = []
-    for i in range(n, len(data)):
-        max_price = max(data[i-n:i])
-        max_prices.append(max_price)
-        
-    actions = []
-    for i in range(n, len(data)):
-        if data[i] > max_prices[i-n]:
-            actions.append('Buy')
-        else:
-            actions.append('Sell')
-            
-    return actions
+    max_price = max(data[:n])
+    return data[-1] > max_price
+
 
 def fitness(genotype):
-    window_size = 0
-    i = 0
-    for gene in genotype:
-        if gene == 's':
-            num = genotype[i + 1] + genotype[i + 2] + genotype[i + 3]
-            window_size = int(num)
-        i += 1
+    
+    letter_order = []
+    operators = [genotype[4], genotype[9]]
+
     alpha = 0
     i = 0
+    s_num = 0
+    e_num = 0
+    m_num = 0
     for gene in genotype:
-        if gene == 'e':
-            e_num = genotype[i + 1] + genotype[i + 2] + genotype[i + 3]
-            alpha = 2 / int(e_num) + 1
-        i += 1
-    n = 0
-    i = 0
-    for gene in genotype:
-        if gene == 'm':
+        if gene == "s":
             num = genotype[i + 1] + genotype[i + 2] + genotype[i + 3]
-            n = int(num)
+            s_num = int(num)
+            if s_num > 0:
+                letter_order.append("s")        
+        elif gene == "e":
+            num = genotype[i + 1] + genotype[i + 2] + genotype[i + 3]
+            e_num = int(num)
+            if e_num > 0:
+                alpha = 2 / e_num + 1
+                letter_order.append("e")
+        elif gene == "m":
+            num = genotype[i + 1] + genotype[i + 2] + genotype[i + 3]
+            m_num = int(num)
+            if m_num > 0:
+                letter_order.append("m")
         i += 1
+
+    print(letter_order)
+    print(operators)
 
     capital = 20000
     gain = 0
     for dataset in datasets:
-        sma = simple_moving_average(dataset, window_size, window_size)
-        ema = exponential_moving_average(dataset, alpha, int(e_num))
-        # max = max_rule(dataset, n)
-        print("Simple moving average     : " + str(sma))
-        print("Exponential moving average: " + str(ema))
-        # print("Max rule                  : " + max[n])
+        if capital != 20000:
+            diff = 20000 - capital
+            gain -= diff
+            capital = 20000
+        if s_num > 0:
+            sma = simple_moving_average(dataset, s_num, s_num)
+            print("Simple moving average     : " + str(sma))
+        if e_num > 0:
+            ema = exponential_moving_average(dataset, alpha, int(e_num))
+            print("Exponential moving average: " + str(ema))
+        if m_num > 0:
+            max = max_rule(dataset, m_num)
+            print("Max rule                  : " + str(max))
+
+        first = False
+        second = False
+        if letter_order[0] == "s":
+            if letter_order[1] == "e":
+                if operators[0] == "&":
+                    first = sma and ema
+                else:
+                    first = sma or ema
+                second = max
+            else:
+                if operators[0] == "&":
+                    first = sma and max
+                else:
+                    first = sma or max
+                second = ema
+        elif letter_order[0] == "e":
+            if letter_order[1] == "s":
+                if operators[0] == "&":
+                    first = sma and ema
+                else:
+                    first = sma or ema
+                second = max
+            else:
+                if operators[0] == "&":
+                    first = ema and max
+                else:
+                    first = ema or max
+                second = sma
+        else:
+            if letter_order[1] == "e":
+                if operators[0] == "&":
+                    first = max and ema
+                else:
+                    first = max or ema
+                second = sma
+            else:
+                if operators[0] == "&":
+                    first = max and ema
+                else:
+                    first = max or ema
+                second = sma
+
+        if operators[1] == "&":
+            if first and second:
+                print("Buy")
+            else:
+                print("Sell")
+        else:
+            if first or second:
+                print("Buy")
+            else:
+                print("Sell")
+
+        print("---------------------------------")
 
 # function to recombine the intermediate population
 def recombine(intermediate_population):
