@@ -88,6 +88,60 @@ def fitness(genotype):
         print("Exponential moving average: " + str(ema))
         print("Max rule                  : " + max[n])
 
+# function for mutation of an individual
+def mutate(individual):
+    # create new individual to return
+    mutated_individual = ""
+    # go through each gene in an individual's genotype
+    for gene in individual:
+        # 1% chance of mutation
+        if random.random() < MUTATION_RATE:
+            if gene == "s":
+                letters = ["e", "m"]
+                mutated_individual += letters[random.randint(0,1)]
+            elif gene == "e":
+                letters = ["s", "m"]
+                mutated_individual += letters[random.randint(0,1)]
+            elif gene == "m":
+                letters = ["s", "e"]
+                mutated_individual += letters[random.randint(0,1)]
+            elif gene == "&":
+                mutated_individual += "|"
+            elif gene == "|":
+                mutated_individual += "&"
+            elif gene == "0":
+                numbers = ["1","2","3","4","5","6","7","8","9"]
+                mutated_individual += numbers[random.randint(0,8)]
+            elif gene == "1":
+                numbers = ["0","2","3","4","5","6","7","8","9"]
+                mutated_individual += numbers[random.randint(0,8)]
+            elif gene == "2":
+                numbers = ["0","1","3","4","5","6","7","8","9"]
+                mutated_individual += numbers[random.randint(0,8)]
+            elif gene == "3":
+                numbers = ["0","1","2","4","5","6","7","8","9"]
+                mutated_individual += numbers[random.randint(0,8)]
+            elif gene == "4":
+                numbers = ["0","1","2","3","5","6","7","8","9"]
+                mutated_individual += numbers[random.randint(0,8)]
+            elif gene == "5":
+                numbers = ["0","1","2","3","4","6","7","8","9"]
+                mutated_individual += numbers[random.randint(0,8)]
+            elif gene == "6":
+                numbers = ["0","1","2","3","4","5","7","8","9"]
+                mutated_individual += numbers[random.randint(0,8)]
+            elif gene == "7":
+                numbers = ["0","1","2","3","4","5","6","8","9"]
+                mutated_individual += numbers[random.randint(0,8)]
+            elif gene == "8":
+                numbers = ["0","1","2","3","4","5","6","7","9"]
+                mutated_individual += numbers[random.randint(0,8)]
+            elif gene == "9":
+                numbers = ["0","1","2","3","4","5","6","7","8"]
+                mutated_individual += numbers[random.randint(0,8)]
+        else:
+            mutated_individual += gene
+    return mutated_individual
 
 dir = "Datasets/historical-stock-prices/"
 data_strings = [dir+"AAPL-1.txt",dir+"AAPL-2.txt",dir+"AAPL-3.txt",dir+"AAPL-4.txt",dir+"AAPL-5.txt",dir+"DDS-1.txt",dir+"DDS-2.txt",dir+"DDS-3.txt",dir+"DDS-4.txt",dir+"DDS-5.txt",dir+"F-1.txt",dir+"F-2.txt",dir+"F-3.txt",dir+"F-4.txt",dir+"F-5.txt",dir+"GE-1.txt",dir+"GE-2.txt",dir+"GE-3.txt",dir+"GE-4.txt",dir+"GE-5.txt",dir+"RTX-1.txt",dir+"RTX-2.txt",dir+"RTX-3.txt",dir+"RTX-4.txt",dir+"RTX-5.txt"]
