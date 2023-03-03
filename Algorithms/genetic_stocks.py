@@ -86,9 +86,6 @@ def fitness(genotype):
                 letter_order.append("m")
         i += 1
 
-    print(letter_order)
-    print(operators)
-
     capital = 20000
     gain = 0
     for dataset in datasets:
@@ -106,55 +103,23 @@ def fitness(genotype):
             max = max_rule(dataset, m_num)
             print("Max rule                  : " + str(max))
 
-        first = False
-        second = False
-        if letter_order[0] == "s":
-            if letter_order[1] == "e":
-                if operators[0] == "&":
-                    first = sma and ema
-                else:
-                    first = sma or ema
-                second = max
+        if operators[0] == "&" and operators[1] == "&":
+            if (sma and ema) and max:
+                print("Buy")
             else:
-                if operators[0] == "&":
-                    first = sma and max
-                else:
-                    first = sma or max
-                second = ema
-        elif letter_order[0] == "e":
-            if letter_order[1] == "s":
-                if operators[0] == "&":
-                    first = sma and ema
-                else:
-                    first = sma or ema
-                second = max
+                print("Sell")
+        elif operators[0] == "&" and operators[1] == "|":
+            if (sma and ema) or max:
+                print("Buy")
             else:
-                if operators[0] == "&":
-                    first = ema and max
-                else:
-                    first = ema or max
-                second = sma
-        else:
-            if letter_order[1] == "e":
-                if operators[0] == "&":
-                    first = max and ema
-                else:
-                    first = max or ema
-                second = sma
-            else:
-                if operators[0] == "&":
-                    first = max and ema
-                else:
-                    first = max or ema
-                second = sma
-
-        if operators[1] == "&":
-            if first and second:
+                print("Sell")
+        elif operators[0] == "|" and operators[1] == "|":
+            if (sma or ema) or max:
                 print("Buy")
             else:
                 print("Sell")
         else:
-            if first or second:
+            if (sma or ema) and max:
                 print("Buy")
             else:
                 print("Sell")
