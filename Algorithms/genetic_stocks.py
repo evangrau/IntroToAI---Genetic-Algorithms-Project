@@ -94,67 +94,308 @@ def fitness(genotype):
             gain -= diff
             capital = 20000
 
-        if (letter_order[0] == "s" and letter_order[1] == "e" and letter_order[2] == "m") and (first_num > 0 and second_num > 0 and third_num > 0):
+        if not (first_num == 0 and second_num == 0 and third_num == 0):
 
-            largest_num = max(first_num, second_num, third_num)
+            if first_num > 0 and second_num > 0 and third_num > 0:
 
-            while largest_num < len(dataset):
+                index = max(first_num, second_num, third_num)
 
-                sma = simple_moving_average(dataset, largest_num, first_num)
-                ema = exponential_moving_average(dataset, largest_num, second_num)
-                max_num = max_rule(dataset, largest_num, third_num)
+                while index < len(dataset):
+                    
+                    # getting the first strategy
+                    if letter_order[0] == "s":
+                        first_arg = simple_moving_average(dataset, index, first_num)
+                    elif letter_order[0] == "e":
+                        first_arg = exponential_moving_average(dataset, index, first_num)
+                    else:
+                        first_arg = max_rule(dataset, index, first_num)
+                    # getting the second strategy
+                    if letter_order[1] == "s":
+                        second_arg = simple_moving_average(dataset, index, second_num)
+                    elif letter_order[1] == "e":
+                        second_arg = exponential_moving_average(dataset, index, second_num)
+                    else:
+                        second_arg = max_rule(dataset, index, second_num)
+                    # getting the third strategy
+                    if letter_order[2] == "s":
+                        third_arg = simple_moving_average(dataset, index, third_num)
+                    elif letter_order[2] == "e":
+                        third_arg = exponential_moving_average(dataset, index, third_num)
+                    else:
+                        third_arg = max_rule(dataset, index, third_num)
 
-                if operators[0] == "&" and operators[1] == "&":
-                    if (sma and ema) and max_num:
-                        while capital - dataset[largest_num] > 0:
-                            capital -= dataset[largest_num]
+                    if operators[0] == "&" and operators[1] == "&":
+                        if (first_arg and second_arg) and third_arg:
+                            while capital - dataset[index] > 0:
+                                capital -= dataset[index]
+                                shares += 1
+                        else:
+                            while shares > 0:
+                                gain += dataset[index]
+                                shares -= 1
+                        while shares > 0:
+                            gain += dataset[len(dataset) - 1]
+                            shares -= 1
+                    elif operators[0] == "&" and operators[1] == "|":
+                        if (first_arg and second_arg) or third_arg:
+                            while capital - dataset[index] > 0:
+                                capital -= dataset[index]
+                                shares += 1
+                        else:
+                            while shares > 0:
+                                gain += dataset[index]
+                                shares -= 1
+                        while shares > 0:
+                            gain += dataset[len(dataset) - 1]
+                            shares -= 1
+                    elif operators[0] == "|" and operators[1] == "&":
+                        if (first_arg or second_arg) and third_arg:
+                            while capital - dataset[index] > 0:
+                                capital -= dataset[index]
+                                shares += 1
+                        else:
+                            while shares > 0:
+                                gain += dataset[index]
+                                shares -= 1
+                        while shares > 0:
+                            gain += dataset[len(dataset) - 1]
+                            shares -= 1
+                    else:
+                        if (first_arg or second_arg) or third_arg:
+                            while capital - dataset[index] > 0:
+                                capital -= dataset[index]
+                                shares += 1
+                        else:
+                            while shares > 0:
+                                gain += dataset[index]
+                                shares -= 1
+                        while shares > 0:
+                            gain += dataset[len(dataset) - 1]
+                            shares -= 1
+                
+                    index += 1
+
+            elif first_num > 0 and second_num > 0 and third_num == 0:
+                index = max(first_num, second_num)
+
+                while index < len(dataset):
+                    
+                    # getting the first strategy
+                    if letter_order[0] == "s":
+                        first_arg = simple_moving_average(dataset, index, first_num)
+                    elif letter_order[0] == "e":
+                        first_arg = exponential_moving_average(dataset, index, first_num)
+                    else:
+                        first_arg = max_rule(dataset, index, first_num)
+                    # getting the second strategy
+                    if letter_order[1] == "s":
+                        second_arg = simple_moving_average(dataset, index, second_num)
+                    elif letter_order[1] == "e":
+                        second_arg = exponential_moving_average(dataset, index, second_num)
+                    else:
+                        second_arg = max_rule(dataset, index, second_num)
+
+                    if operators[0] == "&":
+                        if first_arg and second_arg:
+                            while capital - dataset[index] > 0:
+                                capital -= dataset[index]
+                                shares += 1
+                        else:
+                            while shares > 0:
+                                gain += dataset[index]
+                                shares -= 1
+                        while shares > 0:
+                            gain += dataset[len(dataset) - 1]
+                            shares -= 1
+                    else:
+                        if first_arg or second_arg:
+                            while capital - dataset[index] > 0:
+                                capital -= dataset[index]
+                                shares += 1
+                        else:
+                            while shares > 0:
+                                gain += dataset[index]
+                                shares -= 1
+                        while shares > 0:
+                            gain += dataset[len(dataset) - 1]
+                            shares -= 1
+                
+                    index += 1
+
+            elif first_num > 0 and second_num == 0 and third_num > 0:
+                index = max(first_num, third_num)
+
+                while index < len(dataset):
+                    
+                    # getting the first strategy
+                    if letter_order[0] == "s":
+                        first_arg = simple_moving_average(dataset, index, first_num)
+                    elif letter_order[0] == "e":
+                        first_arg = exponential_moving_average(dataset, index, first_num)
+                    else:
+                        first_arg = max_rule(dataset, index, first_num)
+                    # getting the third strategy
+                    if letter_order[2] == "s":
+                        third_arg = simple_moving_average(dataset, index, third_num)
+                    elif letter_order[2] == "e":
+                        third_arg = exponential_moving_average(dataset, index, third_num)
+                    else:
+                        third_arg = max_rule(dataset, index, third_num)
+
+                    if operators[1] == "&":
+                        if first_arg and third_arg:
+                            while capital - dataset[index] > 0:
+                                capital -= dataset[index]
+                                shares += 1
+                        else:
+                            while shares > 0:
+                                gain += dataset[index]
+                                shares -= 1
+                        while shares > 0:
+                            gain += dataset[len(dataset) - 1]
+                            shares -= 1
+                    else:
+                        if first_arg or third_arg:
+                            while capital - dataset[index] > 0:
+                                capital -= dataset[index]
+                                shares += 1
+                        else:
+                            while shares > 0:
+                                gain += dataset[index]
+                                shares -= 1
+                        while shares > 0:
+                            gain += dataset[len(dataset) - 1]
+                            shares -= 1
+                
+                    index += 1
+
+            elif first_num == 0 and second_num > 0 and third_num > 0:
+                index = max(second_num, third_num)
+
+                while index < len(dataset):
+                    
+                    # getting the second strategy
+                    if letter_order[1] == "s":
+                        second_arg = simple_moving_average(dataset, index, second_num)
+                    elif letter_order[1] == "e":
+                        second_arg = exponential_moving_average(dataset, index, second_num)
+                    else:
+                        second_arg = max_rule(dataset, index, second_num)
+                    # getting the third strategy
+                    if letter_order[2] == "s":
+                        third_arg = simple_moving_average(dataset, index, third_num)
+                    elif letter_order[2] == "e":
+                        third_arg = exponential_moving_average(dataset, index, third_num)
+                    else:
+                        third_arg = max_rule(dataset, index, third_num)
+
+                    if operators[1] == "&":
+                        if second_arg and third_arg:
+                            while capital - dataset[index] > 0:
+                                capital -= dataset[index]
+                                shares += 1
+                        else:
+                            while shares > 0:
+                                gain += dataset[index]
+                                shares -= 1
+                        while shares > 0:
+                            gain += dataset[len(dataset) - 1]
+                            shares -= 1
+                    else:
+                        if second_arg or third_arg:
+                            while capital - dataset[index] > 0:
+                                capital -= dataset[index]
+                                shares += 1
+                        else:
+                            while shares > 0:
+                                gain += dataset[index]
+                                shares -= 1
+                        while shares > 0:
+                            gain += dataset[len(dataset) - 1]
+                            shares -= 1
+                
+                    index += 1
+
+            elif first_num > 0 and second_num == 0 and third_num == 0:
+                index = first_num
+
+                while index < len(dataset):
+                    
+                    # getting the first strategy
+                    if letter_order[0] == "s":
+                        first_arg = simple_moving_average(dataset, index, first_num)
+                    elif letter_order[0] == "e":
+                        first_arg = exponential_moving_average(dataset, index, first_num)
+                    else:
+                        first_arg = max_rule(dataset, index, first_num)
+
+                    if first_arg:
+                        while capital - dataset[index] > 0:
+                            capital -= dataset[index]
                             shares += 1
                     else:
                         while shares > 0:
-                            gain += dataset[largest_num]
+                            gain += dataset[index]
                             shares -= 1
                     while shares > 0:
-                        gain += dataset[len(dataset) - 1]
-                        shares -= 1
-                elif operators[0] == "&" and operators[1] == "|":
-                    if (sma and ema) or max_num:
-                        while capital - dataset[largest_num] > 0:
-                            capital -= dataset[largest_num]
-                            shares += 1
-                    else:
-                        while shares > 0:
-                            gain += dataset[largest_num]
+                            gain += dataset[len(dataset) - 1]
                             shares -= 1
-                    while shares > 0:
-                        gain += dataset[len(dataset) - 1]
-                        shares -= 1
-                elif operators[0] == "|" and operators[1] == "&":
-                    if (sma or ema) and max_num:
-                        while capital - dataset[largest_num] > 0:
-                            capital -= dataset[largest_num]
-                            shares += 1
-                    else:
-                        while shares > 0:
-                            gain += dataset[largest_num]
-                            shares -= 1
-                    while shares > 0:
-                        gain += dataset[len(dataset) - 1]
-                        shares -= 1
-                else:
-                    if (sma or ema) or max_num:
-                        while capital - dataset[largest_num] > 0:
-                            capital -= dataset[largest_num]
-                            shares += 1
-                    else:
-                        while shares > 0:
-                            gain += dataset[largest_num]
-                            shares -= 1
+                
+                    index += 1
 
+            elif first_num == 0 and second_num > 0 and third_num == 0:
+                index = second_num
+
+                while index < len(dataset):
+                    
+                    # getting the second strategy
+                    if letter_order[1] == "s":
+                        second_arg = simple_moving_average(dataset, index, second_num)
+                    elif letter_order[1] == "e":
+                        second_arg = exponential_moving_average(dataset, index, second_num)
+                    else:
+                        second_arg = max_rule(dataset, index, second_num)
+
+                    if second_arg:
+                        while capital - dataset[index] > 0:
+                            capital -= dataset[index]
+                            shares += 1
+                    else:
+                        while shares > 0:
+                            gain += dataset[index]
+                            shares -= 1
                     while shares > 0:
-                        gain += dataset[len(dataset) - 1]
-                        shares -= 1
-            
-                largest_num += 1
+                            gain += dataset[len(dataset) - 1]
+                            shares -= 1
+                
+                    index += 1
+
+            elif first_num == 0 and second_num == 0 and third_num > 0:
+                index = third_num
+
+                while index < len(dataset):
+                    
+                    # getting the third strategy
+                    if letter_order[2] == "s":
+                        third_arg = simple_moving_average(dataset, index, third_num)
+                    elif letter_order[2] == "e":
+                        third_arg = exponential_moving_average(dataset, index, third_num)
+                    else:
+                        third_arg = max_rule(dataset, index, third_num)
+
+                    if third_arg:
+                        while capital - dataset[index] > 0:
+                            capital -= dataset[index]
+                            shares += 1
+                    else:
+                        while shares > 0:
+                            gain += dataset[index]
+                            shares -= 1
+                    while shares > 0:
+                            gain += dataset[len(dataset) - 1]
+                            shares -= 1
+                
+                    index += 1
     
     return gain
 
@@ -247,6 +488,7 @@ datasets = []
 for d in dataset_strings:
     datasets.append(read_file(d))
 
+# genotypes = []
 genotype = "s050&e030&m010"
 
 start_time = time.time()
@@ -256,4 +498,4 @@ print("Fitness: ${:.2f}".format(fitness(genotype)))
 
 end_time = time.time()
 time_elapsed = end_time - start_time
-print("\nTime elapsed: {:.2f} seconds".format(time_elapsed))
+print("Time elapsed: {:.2f} seconds".format(time_elapsed))
