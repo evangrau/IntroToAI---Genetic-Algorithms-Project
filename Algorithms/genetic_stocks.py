@@ -74,30 +74,15 @@ def max_rule(data, n, m_num):
 
 def fitness(genotype):
     
-    letter_order = []
+    letter_order = [genotype[0], genotype[5], genotype[10]]
     operators = [genotype[4], genotype[9]]
 
-    i = 0
-    s_num = 0
-    e_num = 0
-    m_num = 0
-    for gene in genotype:
-        if gene == "s":
-            num = genotype[i + 1] + genotype[i + 2] + genotype[i + 3]
-            s_num = int(num)
-            if s_num > 0:
-                letter_order.append("s")        
-        elif gene == "e":
-            num = genotype[i + 1] + genotype[i + 2] + genotype[i + 3]
-            e_num = int(num)
-            if e_num > 0:
-                letter_order.append("e")
-        elif gene == "m":
-            num = genotype[i + 1] + genotype[i + 2] + genotype[i + 3]
-            m_num = int(num)
-            if m_num > 0:
-                letter_order.append("m")
-        i += 1
+    first_num = int(genotype[1:4])
+    second_num = int(genotype[6:9])
+    third_num = int(genotype[11:14])
+
+    # frame = [letter_order[0], operators[0], letter_order[1], operators[1], letter_order[2]]
+    # print(frame)
 
     capital = 20000
     gain = 0
@@ -107,31 +92,67 @@ def fitness(genotype):
         if capital != 20000:
             diff = 20000 - capital
             gain -= diff
-            capital = 20000   
+            capital = 20000
 
-        if s_num > 0 and e_num > 0 and m_num > 0:
+        if (letter_order[0] == "s" and letter_order[1] == "e" and letter_order[2] == "m") and (first_num > 0 and second_num > 0 and third_num > 0):
 
-            largest_num = max(s_num, e_num, m_num)
+            largest_num = max(first_num, second_num, third_num)
 
             while largest_num < len(dataset):
 
-                sma = simple_moving_average(dataset, largest_num, s_num)
-                ema = exponential_moving_average(dataset, largest_num, e_num)
-                max_num = max_rule(dataset, largest_num, m_num)
+                sma = simple_moving_average(dataset, largest_num, first_num)
+                ema = exponential_moving_average(dataset, largest_num, second_num)
+                max_num = max_rule(dataset, largest_num, third_num)
 
-
-                if (sma and ema) and max_num:
-                    while capital - dataset[largest_num] > 0:
-                        capital -= dataset[largest_num]
-                        shares += 1
-                else:
+                if operators[0] == "&" and operators[1] == "&":
+                    if (sma and ema) and max_num:
+                        while capital - dataset[largest_num] > 0:
+                            capital -= dataset[largest_num]
+                            shares += 1
+                    else:
+                        while shares > 0:
+                            gain += dataset[largest_num]
+                            shares -= 1
                     while shares > 0:
-                        gain += dataset[largest_num]
+                        gain += dataset[len(dataset) - 1]
                         shares -= 1
+                elif operators[0] == "&" and operators[1] == "|":
+                    if (sma and ema) or max_num:
+                        while capital - dataset[largest_num] > 0:
+                            capital -= dataset[largest_num]
+                            shares += 1
+                    else:
+                        while shares > 0:
+                            gain += dataset[largest_num]
+                            shares -= 1
+                    while shares > 0:
+                        gain += dataset[len(dataset) - 1]
+                        shares -= 1
+                elif operators[0] == "|" and operators[1] == "&":
+                    if (sma or ema) and max_num:
+                        while capital - dataset[largest_num] > 0:
+                            capital -= dataset[largest_num]
+                            shares += 1
+                    else:
+                        while shares > 0:
+                            gain += dataset[largest_num]
+                            shares -= 1
+                    while shares > 0:
+                        gain += dataset[len(dataset) - 1]
+                        shares -= 1
+                else:
+                    if (sma or ema) or max_num:
+                        while capital - dataset[largest_num] > 0:
+                            capital -= dataset[largest_num]
+                            shares += 1
+                    else:
+                        while shares > 0:
+                            gain += dataset[largest_num]
+                            shares -= 1
 
-                while shares > 0:
-                    gain += dataset[len(dataset) - 1]
-                    shares -= 1
+                    while shares > 0:
+                        gain += dataset[len(dataset) - 1]
+                        shares -= 1
             
                 largest_num += 1
     
@@ -214,16 +235,23 @@ def fitness(genotype):
 #             mutated_individual += gene
 #     return mutated_individual
 
+companies = ["AAPL", "DDS", "F", "GE", "RTX"]
 dir = "Datasets/historical-stock-prices/"
-data_strings = [dir+"AAPL-1.txt",dir+"AAPL-2.txt",dir+"AAPL-3.txt",dir+"AAPL-4.txt",dir+"AAPL-5.txt",dir+"DDS-1.txt",dir+"DDS-2.txt",dir+"DDS-3.txt",dir+"DDS-4.txt",dir+"DDS-5.txt",dir+"F-1.txt",dir+"F-2.txt",dir+"F-3.txt",dir+"F-4.txt",dir+"F-5.txt",dir+"GE-1.txt",dir+"GE-2.txt",dir+"GE-3.txt",dir+"GE-4.txt",dir+"GE-5.txt",dir+"RTX-1.txt",dir+"RTX-2.txt",dir+"RTX-3.txt",dir+"RTX-4.txt",dir+"RTX-5.txt"]
+dataset_strings = []
+
+for company in companies:
+    for i in range(1,6):
+        dataset_strings.append(f"{dir}{company}-{i}.txt")
+
 datasets = []
-for d in data_strings:
+for d in dataset_strings:
     datasets.append(read_file(d))
 
 genotype = "s050&e030&m010"
 
 start_time = time.time()
 
+print("Genotype: " + genotype)
 print("Fitness: ${:.2f}".format(fitness(genotype)))
 
 end_time = time.time()
