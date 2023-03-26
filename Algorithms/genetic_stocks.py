@@ -456,7 +456,7 @@ def initialize_population():
     # create starting array
     population = ["s010&e000&m000", "s025&e000&m000", "s000&e010&m000", "s000&e025&m000", 
                   "s000&e000&m010", "s000&e000&m025", "s043&e057&m109", "s083&e100&m036", 
-                  "s011|e140|m040", "s052|e130&m024"]
+                  "s011|e140|m040", "s052|e130&m024", total_best_individual]
     letters = ["s", "e", "m"]
     operators = ["&", "|"]
     while len(population) < 40:
@@ -611,7 +611,7 @@ for d in dataset_strings:
     datasets.append(read_file(d))
 
 # keep track of best individual found over multiple runs
-total_best_individual = "e000&e017|s204"
+total_best_individual = "s003&e000|s224"
 total_best_fitness = fitness(total_best_individual)
 
 # create an event object to signal the thread to stop
